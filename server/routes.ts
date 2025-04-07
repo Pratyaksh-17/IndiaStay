@@ -4,7 +4,7 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { generateQRCode } from "./qrCodeGenerator";
 import { z } from "zod";
-import { insertBookingSchema } from "@shared/schema";
+import { insertBookingSchema, User } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -158,10 +158,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to create a booking" });
       }
       
-      const bookingData = insertBookingSchema.parse(req.body);
+      // Parse dates from ISO strings to Date objects before validation
+      const bookingData = {
+        ...req.body,
+        checkInDate: req.body.checkInDate ? new Date(req.body.checkInDate) : undefined,
+        checkOutDate: req.body.checkOutDate ? new Date(req.body.checkOutDate) : undefined
+      };
+      
+      const validatedData = insertBookingSchema.parse(bookingData);
       
       const booking = await storage.createBooking({
-        ...bookingData,
+        ...validatedData,
         userId: req.user!.id,
       });
       
@@ -203,8 +210,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             };
           }
           
+          // Ensure dates are formatted as ISO strings
           return {
             ...booking,
+            checkInDate: booking.checkInDate.toISOString(),
+            checkOutDate: booking.checkOutDate.toISOString(),
             hotel: hotelInfo,
           };
         })
