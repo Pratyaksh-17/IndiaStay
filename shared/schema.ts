@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // User Schema
 export const users = pgTable("users", {
@@ -78,12 +79,10 @@ export const packages = pgTable("packages", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  location: text("location").notNull(),
   price: integer("price").notNull(),
-  discountedPrice: integer("discounted_price"),
-  image: text("image").notNull(),
-  nights: integer("nights").notNull(),
-  features: json("features").notNull(),
+  duration: integer("duration").notNull(),
+  inclusions: json("inclusions").notNull(),
+  image_url: text("image_url").notNull(),
 });
 
 export const insertPackageSchema = createInsertSchema(packages).omit({
@@ -93,18 +92,58 @@ export const insertPackageSchema = createInsertSchema(packages).omit({
 // Offers Schema
 export const offers = pgTable("offers", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
   code: text("code").notNull().unique(),
   description: text("description").notNull(),
-  validUntil: timestamp("valid_until").notNull(),
-  discount: integer("discount").notNull(),
-  type: text("type").notNull(), // percentage or fixed
-  color: text("color").notNull(),
+  discount_percentage: integer("discount_percentage").notNull(),
+  valid_from: timestamp("valid_from").notNull(),
+  valid_until: timestamp("valid_until").notNull(),
+  min_booking_amount: integer("min_booking_amount").notNull(),
 });
 
 export const insertOfferSchema = createInsertSchema(offers).omit({
   id: true,
 });
+
+// Define relations between tables
+export const usersRelations = relations(users, ({ many }) => ({
+  bookings: many(bookings),
+}));
+
+export const statesRelations = relations(states, ({ many }) => ({
+  cities: many(cities),
+  hotels: many(hotels),
+}));
+
+export const citiesRelations = relations(cities, ({ one, many }) => ({
+  state: one(states, {
+    fields: [cities.stateId],
+    references: [states.id],
+  }),
+  hotels: many(hotels),
+}));
+
+export const hotelsRelations = relations(hotels, ({ one, many }) => ({
+  state: one(states, {
+    fields: [hotels.stateId],
+    references: [states.id], 
+  }),
+  city: one(cities, {
+    fields: [hotels.cityId],
+    references: [cities.id],
+  }),
+  bookings: many(bookings),
+}));
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  user: one(users, {
+    fields: [bookings.userId],
+    references: [users.id],
+  }),
+  hotel: one(hotels, {
+    fields: [bookings.hotelId],
+    references: [hotels.id],
+  }),
+}));
 
 // Types
 export type User = typeof users.$inferSelect;
