@@ -6,6 +6,7 @@ export async function addAdditionalHotels(
   cityMap: Map<string, number>
 ) {
   console.log("Adding additional hotels for each state...");
+  console.log(`Found ${stateMap.size} states and ${cityMap.size} cities`);
   
   const additionalHotels: Omit<InsertHotel, "id">[] = [
     // Delhi (add 4 more hotels to reach 6)
@@ -509,7 +510,8 @@ export async function addAdditionalHotels(
   for (const hotel of additionalHotels) {
     try {
       const validatedHotel = insertHotelSchema.parse(hotel);
-      await storage.createHotel(validatedHotel);
+      const newHotel = await storage.createHotel(validatedHotel);
+      console.log(`Added hotel ID ${newHotel.id}: ${newHotel.name}`);
       hotelCounter++;
     } catch (error) {
       console.error(`Failed to add hotel ${hotel.name}:`, error);
@@ -517,4 +519,20 @@ export async function addAdditionalHotels(
   }
   
   console.log(`Successfully added ${hotelCounter} additional hotels.`);
+  
+  // Get all hotels to verify
+  const allHotels = await storage.getHotels();
+  console.log(`Total hotels in database: ${allHotels.length}`);
+  
+  // Count hotels by state
+  const stateHotelCounts = new Map<number, number>();
+  for (const hotel of allHotels) {
+    const count = stateHotelCounts.get(hotel.stateId) || 0;
+    stateHotelCounts.set(hotel.stateId, count + 1);
+  }
+  
+  // Log counts by state
+  for (const [stateId, count] of [...stateHotelCounts.entries()]) {
+    console.log(`State ID ${stateId}: ${count} hotels`);
+  }
 }

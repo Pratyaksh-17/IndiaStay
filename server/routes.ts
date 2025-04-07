@@ -285,8 +285,27 @@ async function initializeData() {
     
     // For other data, check if it already exists
     const existingStates = await storage.getStates();
+    const existingHotels = await storage.getHotels();
+    console.log(`Found ${existingStates.length} states and ${existingHotels.length} hotels`);
+    
     if (existingStates.length > 0) {
-      console.log("States data already initialized, skipping that part");
+      console.log("States data already initialized, skipping state initialization");
+      
+      // Build state and city maps for additionalHotels
+      const stateNameToIdMap = new Map<string, number>();
+      for (const state of existingStates) {
+        stateNameToIdMap.set(state.name, state.id);
+      }
+      
+      const cities = await storage.getCities();
+      const cityNameToIdMap = new Map<string, number>();
+      for (const city of cities) {
+        cityNameToIdMap.set(city.name, city.id);
+      }
+      
+      // Add additional hotels even if states exist
+      console.log("Adding additional hotels...");
+      await addAdditionalHotels(stateNameToIdMap, cityNameToIdMap);
     } else {
       console.log("Initializing states, cities and hotels data...");
 
@@ -761,6 +780,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Search hotels
+  app.get("/api/hotels/byState/:stateId", async (req, res) => {
+    try {
+      const stateId = parseInt(req.params.stateId);
+      if (isNaN(stateId)) {
+        return res.status(400).json({ message: "Invalid state ID" });
+      }
+      
+      const hotels = await storage.getHotelsByState(stateId);
+      
+      // Join with state and city data
+      const states = await storage.getStates();
+      const cities = await storage.getCities();
+      
+      const stateMap = new Map(states.map(state => [state.id, state]));
+      const cityMap = new Map(cities.map(city => [city.id, city]));
+      
+      const hotelsWithLocation = hotels.map(hotel => ({
+        ...hotel,
+        stateName: stateMap.get(hotel.stateId)?.name,
+        cityName: cityMap.get(hotel.cityId)?.name
+      }));
+      
+      res.json(hotelsWithLocation);
+    } catch (error) {
+      console.error(`Error fetching hotels for state ${req.params.stateId}:`, error);
+      res.status(500).json({ message: "Failed to fetch hotels for state" });
+    }
+  });
+
   app.get("/api/hotels/search/:query", async (req, res) => {
     try {
       const { query } = req.params;

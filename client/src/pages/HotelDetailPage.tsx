@@ -23,6 +23,7 @@ const HotelDetailPage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectingCheckIn, setSelectingCheckIn] = useState(true);
   const [numberOfNights, setNumberOfNights] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Fetch hotel data
   const { data: hotel, isLoading } = useQuery<HotelWithLocation>({
@@ -35,10 +36,23 @@ const HotelDetailPage = () => {
     enabled: hotelId > 0,
   });
 
+  // Initialize current date to noon to avoid timezone issues
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    setCurrentMonth(today);
+  }, []);
+
   // Calculate number of nights when dates change
   useEffect(() => {
     if (checkInDate && checkOutDate) {
-      const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+      // Normalize dates to avoid timezone issues
+      const checkIn = new Date(checkInDate);
+      checkIn.setHours(12, 0, 0, 0);
+      const checkOut = new Date(checkOutDate);
+      checkOut.setHours(12, 0, 0, 0);
+      
+      const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       setNumberOfNights(diffDays);
     } else {
@@ -51,13 +65,17 @@ const HotelDetailPage = () => {
   };
 
   const handleDateSelect = (date: Date) => {
+    // Normalize date to noon to avoid timezone issues
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(12, 0, 0, 0);
+    
     if (selectingCheckIn) {
-      setCheckInDate(date);
+      setCheckInDate(normalizedDate);
       setSelectingCheckIn(false);
     } else {
       // Ensure checkout date is after checkin date
-      if (checkInDate && date > checkInDate) {
-        setCheckOutDate(date);
+      if (checkInDate && normalizedDate > checkInDate) {
+        setCheckOutDate(normalizedDate);
         setShowDatePicker(false);
       } else {
         toast({
@@ -67,6 +85,55 @@ const HotelDetailPage = () => {
         });
       }
     }
+  };
+  
+  const handleAddToCart = () => {
+    if (!checkInDate || !checkOutDate || !hotel) {
+      toast({
+        title: "Date selection required",
+        description: "Please select both check-in and check-out dates",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    const cartItem = {
+      id: `hotel-${hotel.id}-${Date.now()}`,
+      type: "hotel" as const,
+      item: {
+        id: hotel.id,
+        name: hotel.name,
+        location: `${hotel.cityName}, ${hotel.stateName}`,
+        image: Array.isArray(hotel.images) && hotel.images.length > 0 ? hotel.images[0] : '',
+        price: hotel.price,
+        checkInDate: checkInDate.toISOString(),
+        checkOutDate: checkOutDate.toISOString(),
+        guests: 2, // Default value
+        nights: nights
+      },
+      quantity: 1
+    };
+    
+    // Get existing cart or initialize empty array
+    const existingCartJSON = localStorage.getItem("travelCart");
+    const existingCart = existingCartJSON ? JSON.parse(existingCartJSON) : [];
+    
+    // Add new item to cart
+    const updatedCart = [...existingCart, cartItem];
+    
+    // Save back to localStorage
+    localStorage.setItem("travelCart", JSON.stringify(updatedCart));
+    
+    // Trigger storage event for other components
+    window.dispatchEvent(new Event('storage'));
+    
+    toast({
+      title: "Added to cart",
+      description: `${hotel.name} has been added to your cart`,
+    });
   };
 
   const handleProceedToPayment = () => {
@@ -344,13 +411,23 @@ const HotelDetailPage = () => {
                   </div>
                 )}
                 
-                <Button 
-                  className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 px-4 rounded transition"
-                  onClick={handleProceedToPayment}
-                  disabled={!checkInDate || !checkOutDate}
-                >
-                  Proceed to Payment
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Button 
+                    className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 px-4 rounded transition"
+                    onClick={handleAddToCart}
+                    disabled={!checkInDate || !checkOutDate}
+                  >
+                    Add to Cart
+                  </Button>
+                  
+                  <Button 
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded transition"
+                    onClick={handleProceedToPayment}
+                    disabled={!checkInDate || !checkOutDate}
+                  >
+                    Proceed to Payment
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

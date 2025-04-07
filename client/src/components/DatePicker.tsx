@@ -40,7 +40,10 @@ const DatePicker = ({
     
     // Add days of month
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
+      const date = new Date(year, month, i);
+      // Set the time to noon to avoid timezone issues
+      date.setHours(12, 0, 0, 0);
+      days.push(date);
     }
     
     setCalendarDays(days);
