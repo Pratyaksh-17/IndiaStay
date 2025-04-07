@@ -1,23 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from 'wouter';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, User, Calendar, MapPin, Mail, Phone, Edit, Book, Clock } from 'lucide-react';
+import { Loader2, User, Calendar, MapPin, Mail, Phone, Edit, Book, Clock, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { BookingWithHotel } from '@/utils/types';
+import BookingDetailsModal from '@/components/BookingDetailsModal';
 
 export default function ProfilePage() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
+  const [selectedBooking, setSelectedBooking] = useState<BookingWithHotel | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Query bookings for the logged-in user
-  const { data: bookings, isLoading: isLoadingBookings } = useQuery<BookingWithHotel[]>({
+  const { data: bookings, isLoading: isLoadingBookings, refetch } = useQuery<BookingWithHotel[]>({
     queryKey: ['/api/bookings'],
     enabled: !!user,
   });
+  
+  const handleOpenBookingDetails = (booking: BookingWithHotel) => {
+    setSelectedBooking(booking);
+    setIsModalOpen(true);
+  };
+  
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+  
+  const handleCancelSuccess = () => {
+    refetch();
+  };
   
   // If user is not logged in, redirect to login page
   React.useEffect(() => {
@@ -36,6 +52,13 @@ export default function ProfilePage() {
   
   return (
     <div className="container mx-auto py-16 px-4 md:px-6">
+      <BookingDetailsModal
+        booking={selectedBooking}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onCancelSuccess={handleCancelSuccess}
+      />
+      
       <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
       
       <Tabs defaultValue="profile" className="w-full">
@@ -229,8 +252,22 @@ export default function ProfilePage() {
                           </div>
                           
                           <div className="flex justify-end mt-4 space-x-2">
-                            <Button variant="outline" size="sm">View Details</Button>
-                            <Button variant="destructive" size="sm">Cancel Booking</Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleOpenBookingDetails(booking)}
+                            >
+                              View Details
+                            </Button>
+                            {booking.status !== 'cancelled' && (
+                              <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                onClick={() => handleOpenBookingDetails(booking)}
+                              >
+                                Cancel Booking
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

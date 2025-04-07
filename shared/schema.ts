@@ -66,6 +66,10 @@ export const bookings = pgTable("bookings", {
   totalPrice: integer("total_price").notNull(),
   status: text("status").notNull().default("confirmed"),
   paymentMethod: text("payment_method").notNull(),
+  guestName: text("guest_name").notNull(),
+  guestEmail: text("guest_email").notNull(),
+  guestPhone: text("guest_phone").notNull(),
+  specialRequests: text("special_requests"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -928,6 +928,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Cancel a booking
+  app.post("/api/bookings/:id/cancel", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to cancel a booking" });
+      }
+      
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+      
+      // Fetch the booking
+      const booking = await storage.getBooking(bookingId);
+      
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      // Check if the booking belongs to the current user
+      if (booking.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You are not authorized to cancel this booking" });
+      }
+      
+      // Check if the booking is already cancelled
+      if (booking.status === 'cancelled') {
+        return res.status(400).json({ message: "This booking is already cancelled" });
+      }
+      
+      // Cancel the booking
+      const updatedBooking = await storage.updateBookingStatus(bookingId, 'cancelled');
+      
+      res.json(updatedBooking);
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      res.status(500).json({ message: "Failed to cancel booking" });
+    }
+  });
+  
   // Generate a QR code for payment
   app.post("/api/generate-qr-code", async (req, res) => {
     try {

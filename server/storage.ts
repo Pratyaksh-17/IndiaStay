@@ -56,6 +56,7 @@ export interface IStorage {
   getBookingsByUser(userId: number): Promise<Booking[]>;
   getBooking(id: number): Promise<Booking | undefined>;
   createBooking(booking: InsertBooking): Promise<Booking>;
+  updateBookingStatus(id: number, status: string): Promise<Booking>;
   
   // Package operations
   getPackages(): Promise<Package[]>;
@@ -214,6 +215,15 @@ export class DatabaseStorage implements IStorage {
   async createBooking(booking: InsertBooking): Promise<Booking> {
     const [newBooking] = await db.insert(bookings).values(booking).returning();
     return newBooking;
+  }
+  
+  async updateBookingStatus(id: number, status: string): Promise<Booking> {
+    const [updatedBooking] = await db
+      .update(bookings)
+      .set({ status })
+      .where(eq(bookings.id, id))
+      .returning();
+    return updatedBooking;
   }
 
   // Package methods
