@@ -1,0 +1,105 @@
+Build a full-stack travel booking platform like MakeMyTrip, focused only on hotels within India.
+
+Use the following technologies:
+
+Frontend: HTML, CSS, JavaScript (with React)
+
+Backend: Node.js with Express
+
+Database: SQLite (for simplicity) or PostgreSQL (optional)
+
+QR Code Generator API (any open-source or mock API)
+
+Currency formatting in INR (₹)
+
+✅ App Features:
+
+Signup & Login:
+
+Create a signup page with fields: name, email, password
+
+Hash passwords using bcrypt
+
+Store all users in a database
+
+Login page to verify and start a session
+
+Hotel Pages:
+
+Create a page: /hotels
+
+Add dummy hotels for every major Indian state (e.g., Delhi, Maharashtra, Kerala, Tamil Nadu, etc.)
+
+Each hotel should have: name, description, city, state, price (in INR), availability
+
+Display hotels with filter/search by state, city, or hotel name
+
+Convert pricing to INR (₹) using JavaScript’s toLocaleString
+
+Intelligent Search:
+
+Add a search bar to filter hotels by name or location (fuzzy match allowed)
+
+Show suggestions as the user types
+
+Calendar Booking:
+
+On each hotel page, allow user to pick Check-in and Check-out dates using a calendar input
+
+Calculate number of nights automatically
+
+Hotel Booking Flow:
+
+User selects a hotel → selects dates → clicks “Book”
+
+Show payment page with:
+
+UPI
+
+Card
+
+Netbanking
+
+Wallet
+
+QR code (generate using any free/public QR code API — or create base64 mock if no API access)
+
+After payment step (mocked), show a green check mark and “Booking Confirmed” message
+
+Packages and Offers Pages:
+
+Create pages /packages and /offers
+
+Add random dummy entries like: “Goa Beach Escape”, “Manali Hill Adventure”, “Diwali Sale 30% Off”, etc.
+
+Each entry should have: title, price, description, and location
+
+Allow user to “Add to Cart” (mocked)
+
+Bookings Database:
+
+Save bookings in database with:
+
+user_id
+
+hotel_id
+
+check-in/check-out dates
+
+total price
+
+timestamp
+
+Admin Features (optional):
+
+Admin dashboard to view all users and all bookings
+
+🎯 Bonus (optional):
+
+Add a loading animation before confirmation tick
+
+Use TailwindCSS or Bootstrap for UI styling
+
+Add random hotel images using Unsplash
+
+Display total cost with taxes
