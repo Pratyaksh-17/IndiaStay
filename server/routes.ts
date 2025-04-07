@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { generateQRCode } from "./qrCodeGenerator";
+import { addAdditionalHotels } from "./additionalHotels";
 import { z } from "zod";
 import { insertBookingSchema, insertHotelSchema, insertStateSchema, insertCitySchema, insertPackageSchema, insertOfferSchema } from "@shared/schema";
 
@@ -645,6 +646,9 @@ async function initializeData() {
         const validatedHotel = insertHotelSchema.parse(hotel);
         await storage.createHotel(validatedHotel);
       }
+      
+      // Add at least 6 hotels for each state
+      await addAdditionalHotels(stateMap, cityMap);
 
       console.log("States, cities and hotels initialization complete");
     }

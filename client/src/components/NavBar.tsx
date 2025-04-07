@@ -1,14 +1,55 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Building, Menu, X } from "lucide-react";
+import { Building, Menu, X, ShoppingCart } from "lucide-react";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  
+  useEffect(() => {
+    // Load cart items from localStorage
+    const savedCart = localStorage.getItem("travelCart");
+    if (savedCart) {
+      try {
+        const cartItems = JSON.parse(savedCart);
+        setCartItemsCount(cartItems.length);
+      } catch (error) {
+        console.error("Failed to parse cart:", error);
+      }
+    }
+    
+    // Listen for storage events to update cart count
+    const handleStorageChange = () => {
+      const updatedCart = localStorage.getItem("travelCart");
+      if (updatedCart) {
+        try {
+          const cartItems = JSON.parse(updatedCart);
+          setCartItemsCount(cartItems.length);
+        } catch (error) {
+          console.error("Failed to parse cart:", error);
+        }
+      } else {
+        setCartItemsCount(0);
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    
+    // Check for changes every second (for same-window updates)
+    const interval = setInterval(() => {
+      handleStorageChange();
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -62,6 +103,16 @@ const NavBar = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <Link href="/cart">
+              <a className="relative flex items-center">
+                <ShoppingCart className="text-neutral-800 hover:text-primary" size={22} />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </a>
+            </Link>
             {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-neutral-800 font-medium hidden md:block">Welcome, {user.name}</span>
@@ -115,6 +166,17 @@ const NavBar = () => {
                 <a className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md">
                   <i className="fas fa-tag block mx-auto mb-1"></i>
                   Offers
+                </a>
+              </Link>
+              <Link href="/cart">
+                <a className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md relative">
+                  <ShoppingCart className="mx-auto mb-1" size={16} />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute top-0 right-1/4 bg-primary text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                  Cart
                 </a>
               </Link>
               {user && (

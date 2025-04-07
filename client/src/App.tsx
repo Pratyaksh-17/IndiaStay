@@ -8,6 +8,7 @@ import PaymentPage from "@/pages/PaymentPage";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import PackagesPage from "@/pages/PackagesPage";
 import OffersPage from "@/pages/OffersPage";
+import CartPage from "@/pages/CartPage";
 import AuthPage from "@/pages/AuthPage";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -26,6 +27,7 @@ function Router() {
       <ProtectedRoute path="/booking-confirmation/:bookingId" component={BookingConfirmationPage} />
       <Route path="/packages" component={PackagesPage} />
       <Route path="/offers" component={OffersPage} />
+      <Route path="/cart" component={CartPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
