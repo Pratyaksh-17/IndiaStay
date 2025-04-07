@@ -10,6 +10,7 @@ import PackagesPage from "@/pages/PackagesPage";
 import OffersPage from "@/pages/OffersPage";
 import CartPage from "@/pages/CartPage";
 import AuthPage from "@/pages/AuthPage";
+import ComparisonPage from "@/pages/ComparisonPage";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -29,6 +30,8 @@ function Router() {
       <Route path="/offers" component={OffersPage} />
       <Route path="/cart" component={CartPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/compare" component={ComparisonPage} />
+      <Route path="/compare/:stateId" component={ComparisonPage} />
       <Route component={NotFound} />
     </Switch>
   );

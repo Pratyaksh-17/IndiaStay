@@ -100,6 +100,11 @@ const NavBar = () => {
                   Offers
                 </a>
               </Link>
+              <Link href="/compare">
+                <a className={`hover:text-primary font-semibold ${location.includes('/compare') ? 'text-primary' : 'text-neutral-800'}`}>
+                  Compare
+                </a>
+              </Link>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -166,6 +171,12 @@ const NavBar = () => {
                 <a className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md">
                   <i className="fas fa-tag block mx-auto mb-1"></i>
                   Offers
+                </a>
+              </Link>
+              <Link href="/compare">
+                <a className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md">
+                  <i className="fas fa-balance-scale block mx-auto mb-1"></i>
+                  Compare
                 </a>
               </Link>
               <Link href="/cart">
