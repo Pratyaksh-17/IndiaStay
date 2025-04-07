@@ -21,7 +21,35 @@ const PackagesPage = () => {
   });
   
   const handleAddToCart = (pkg: Package) => {
-    // In a real app, this would add the package to a cart
+    const cartItem = {
+      id: `package-${pkg.id}-${Date.now()}`,
+      type: "package" as const,
+      item: {
+        id: pkg.id,
+        title: pkg.title,
+        description: pkg.description,
+        image_url: pkg.image_url,
+        price: pkg.price,
+        duration: pkg.duration || 3, // Default duration if not specified
+        travelers: 1 // Default number of travelers
+      },
+      quantity: 1
+    };
+    
+    // Get existing cart or initialize empty array
+    const existingCartJSON = localStorage.getItem("travelCart");
+    const existingCart = existingCartJSON ? JSON.parse(existingCartJSON) : [];
+    
+    // Add new item to cart
+    const updatedCart = [...existingCart, cartItem];
+    
+    // Save back to localStorage
+    localStorage.setItem("travelCart", JSON.stringify(updatedCart));
+    
+    // Dispatch custom event for NavBar to detect the change
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event('cartUpdated'));
+    
     toast({
       title: "Package added to cart",
       description: `${pkg.title} has been added to your cart.`,
@@ -65,40 +93,25 @@ const PackagesPage = () => {
                 <div key={pkg.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                   <div className="relative">
                     <img 
-                      src={pkg.image} 
+                      src={pkg.image_url} 
                       alt={pkg.title} 
                       className="w-full h-48 object-cover"
                     />
-                    {pkg.discountedPrice && (
-                      <div className="absolute top-0 right-0 bg-secondary text-white px-3 py-1 m-2 rounded-md font-semibold">
-                        {Math.round(((pkg.price - pkg.discountedPrice) / pkg.price) * 100)}% OFF
-                      </div>
-                    )}
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-xl mb-2">{pkg.title}</h3>
-                    <p className="text-neutral-600 text-sm mb-3">
-                      <MapPin className="inline-block text-red-500 mr-1" size={14} /> {pkg.location}
-                    </p>
                     <p className="text-neutral-700 text-sm mb-4">{pkg.description}</p>
                     
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        {pkg.discountedPrice ? (
-                          <>
-                            <span className="text-sm text-neutral-500 line-through">{formatCurrency(pkg.price)}</span>
-                            <span className="text-lg font-bold text-green-600 ml-2 price-tag">{formatCurrency(pkg.discountedPrice)}</span>
-                          </>
-                        ) : (
-                          <span className="text-lg font-bold text-green-600 price-tag">{formatCurrency(pkg.price)}</span>
-                        )}
+                        <span className="text-lg font-bold text-green-600 price-tag">{formatCurrency(pkg.price)}</span>
                       </div>
                       <span className="text-sm text-neutral-600">per person</span>
                     </div>
                     
                     <div className="flex items-center flex-wrap space-x-2 mb-4">
-                      {Array.isArray(pkg.features) && pkg.features.map((feature, index) => (
-                        <span key={index} className="bg-neutral-100 text-xs px-2 py-1 rounded">{feature}</span>
+                      {Array.isArray(pkg.inclusions) && (pkg.inclusions as string[]).map((inclusion, index) => (
+                        <span key={index} className="bg-neutral-100 text-xs px-2 py-1 rounded">{inclusion}</span>
                       ))}
                     </div>
                     

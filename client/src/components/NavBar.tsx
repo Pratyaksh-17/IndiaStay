@@ -23,8 +23,8 @@ const NavBar = () => {
       }
     }
     
-    // Listen for storage events to update cart count
-    const handleStorageChange = () => {
+    // Function to update cart count from localStorage
+    const updateCartCount = () => {
       const updatedCart = localStorage.getItem("travelCart");
       if (updatedCart) {
         try {
@@ -38,15 +38,19 @@ const NavBar = () => {
       }
     };
     
-    window.addEventListener("storage", handleStorageChange);
+    // Listen for storage events to update cart count from other tabs
+    window.addEventListener("storage", updateCartCount);
     
-    // Check for changes every second (for same-window updates)
-    const interval = setInterval(() => {
-      handleStorageChange();
-    }, 1000);
+    // Custom event for same-window updates
+    window.addEventListener("cartUpdated", updateCartCount);
+    
+    // Initial update and periodic check as fallback
+    updateCartCount();
+    const interval = setInterval(updateCartCount, 1000);
     
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cartUpdated", updateCartCount);
       clearInterval(interval);
     };
   }, []);
