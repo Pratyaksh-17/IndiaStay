@@ -176,6 +176,10 @@ const PaymentPage = () => {
       totalPrice,
       paymentMethod,
       status: "confirmed",
+      guestName,
+      guestEmail,
+      guestPhone,
+      specialRequests: specialRequests || ""
     };
     
     setShowPaymentProcessing(true);
