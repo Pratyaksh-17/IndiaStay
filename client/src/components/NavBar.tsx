@@ -121,6 +121,11 @@ const NavBar = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-neutral-800 font-medium hidden md:block">Welcome, {user.name}</span>
+                <Link href="/profile">
+                  <a className="text-primary hover:text-primary-dark font-semibold">
+                    Profile
+                  </a>
+                </Link>
                 <button 
                   onClick={handleLogout}
                   className="text-primary hover:text-primary-dark font-semibold"
@@ -191,13 +196,21 @@ const NavBar = () => {
                 </a>
               </Link>
               {user && (
-                <button
-                  onClick={handleLogout}
-                  className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md"
-                >
-                  <i className="fas fa-sign-out-alt block mx-auto mb-1"></i>
-                  Logout
-                </button>
+                <>
+                  <Link href="/profile">
+                    <a className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md">
+                      <i className="fas fa-user block mx-auto mb-1"></i>
+                      Profile
+                    </a>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-neutral-800 py-2 px-3 font-semibold text-center flex-1 hover:bg-neutral-100 rounded-md"
+                  >
+                    <i className="fas fa-sign-out-alt block mx-auto mb-1"></i>
+                    Logout
+                  </button>
+                </>
               )}
             </div>
           </div>
